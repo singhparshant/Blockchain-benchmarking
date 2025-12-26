@@ -1,0 +1,19 @@
+{
+  "name": "near-transactions",
+  "version": "1.0.0",
+  "license": "(MIT AND Apache-2.0)",
+  "scripts": {
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "deploy": "cd contract && npm run deploy",
+    "build": "npm run build:contract",
+    "build:contract": "cd contract && npm run build"
+  },
+  "devDependencies": {
+    "near-cli": "^3.4.0",
+    "prettier": "^2.8.7",
+    "near-sdk-js": "^1.0.0",
+    "near-api-js": "^2.1.4"
+  },
+  "dependencies": {}
+}
