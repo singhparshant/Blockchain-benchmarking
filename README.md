@@ -1,0 +1,11 @@
+- First comprehensive profiling and benchmarking study of the **NEAR Protocol**
+- Identified gaps in prior benchmarking frameworks (Diablo, Gromit), which did not evaluate NEAR
+- Deployed and operated a **local NEAR network** for controlled experimentation
+- Designed and executed benchmarks using **locally deployed smart contracts**
+- Measured key performance metrics:
+    - Throughput
+    - Transaction latency
+    - Impact of sharding
+- Produced quantitative analysis with plots and visualizations to surface performance limits and trade-offs
+- Provided independent performance insights beyond foundation-published metrics
+- Contributed a reproducible benchmarking methodology for future blockchain evaluations
