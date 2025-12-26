@@ -1,0 +1,60 @@
+# Cleanup before starting the experiment
+- name: Ensure {{ near_tmp_dir }} is removed
+  file:
+    path: "{{ near_tmp_dir }}"
+    state: absent
+  delegate_to: localhost
+  run_once: true
+  when: node == "node-1"
+
+- name: Ensure {{ near_tmp_dir }} is recreated
+  file:
+    path: "{{ near_tmp_dir }}"
+    state: directory
+  delegate_to: localhost
+  run_once: true
+  when: node == "node-1"
+
+- name: Cleaup near data and process
+  script: files/cleanup-near.sh {{ node }}
+
+# Don't download the nearcore repo if it already exists
+- name: Check if ~/nearcore exists
+  stat:
+    path: "~/nearcore"
+  register: nearcore_folder
+
+- name: install near
+  script: files/install-near.sh
+  when: nearcore_folder.stat.exists == false
+
+# This is for setting the near-cli environment
+- name: export NEAR_ENV variable
+  shell: 'echo "export NEAR_ENV=localnet" >> ~/.bashrc'
+
+# Generate the keys for all the nodes on node-1 and copy them to the other nodes. We generate all the keys one shot and then distribute them to the other nodes
+- block:
+  - name: run genesis node setup script
+    script: files/genesis-node-setup.sh {{ service.validators }} {{ service.non_validators | default(0) }} {{ service.shards | default(1) }}
+
+  # Copy the keys from node-1 to the mgmt host
+  - name: Copy contents of ~/.near to {{ near_tmp_dir }}
+    synchronize:
+      src: "{{ near_dir }}/"
+      dest: "{{ near_tmp_dir }}/"
+      mode: pull
+  when: node == "node-1"
+
+- block:
+  - name: Ensure ~/.near directory exists on client nodes
+    file:
+      path: "~/.near/"
+      state: directory
+
+  # Copy the keys from the mgmt host to the other nodes
+  - name: Copy contents of {{ near_tmp_dir }} to ~/.near
+    synchronize:
+      src: "{{ near_tmp_dir }}/{{ node }}"
+      dest: "{{ near_dir }}/"
+      mode: push
+  when: node != "node-1"

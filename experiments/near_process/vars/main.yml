@@ -1,0 +1,5 @@
+near_tmp_dir: ~/near_tmp
+near_home_dir: ~/near
+neard_bin_dir: ~/nearcore/target/release
+near_net_name: near-net
+near_dir: ~/.near

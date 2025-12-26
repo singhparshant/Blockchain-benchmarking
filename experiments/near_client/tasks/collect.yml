@@ -1,0 +1,30 @@
+- name: Fetch results and archive
+  block:
+    - name: create node archive
+      archive:
+        path: ~/results
+        dest: "~/results_{{ service.id }}.tar.gz"
+
+    - name: copy results tar
+      fetch:
+        src: "~/results_{{ service.id }}.tar.gz"
+        dest: "~/results/results_{{ service.id }}"
+
+    - name: remove results folder
+      file:
+        path: '~/results'
+        state: absent
+  when: service.role == "non_validator"
+
+- name: Fetch output file and archive
+  block:
+    - name: create output archive
+      archive:
+        path: ~/output.txt
+        dest: "~/output_{{ service.id }}.zip"
+
+    - name: copy results zip file
+      fetch:
+        src: "~/output_{{ service.id }}.zip"
+        dest: "~/results/results_{{ service.id }}"
+  when: service.role == "validator"

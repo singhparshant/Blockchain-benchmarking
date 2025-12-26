@@ -1,0 +1,89 @@
+- name: Debug nodes variable
+  debug:
+    msg: "Nodes variable is: {{ nodes }}"
+
+- name: Debug single node variable
+  debug:
+    msg: "Nodes variable is: {{ node }}"
+
+
+- name: Synchronize directory to remote host
+  synchronize:
+    src: ~/toolchain/engine/engine/roles/services/near_contracts/files/near-transactions
+    dest: ~/
+
+- name: install extra packages
+  apt:
+    name:
+      - golang
+    state: present
+
+- name: Deploy smart contracts
+  script: files/build_and_deploy.sh
+  when: node == "node-1"
+  register: script_executing
+
+- name: Build and Deploy logs
+  debug:
+    msg: '{{ script_executing.stdout_lines }}'
+  when: node == "node-1"
+
+
+# Create accounts for different smart contracts
+- block:
+  - name: Set account names for all nodes
+    set_fact:
+      account_names: "{{ nodes | product(['_fifa.node-1', '_exchange.node-1', '_uber.node-1', '_youtube.node-1', '_dota.node-1', '_transfer.node-1']) | map('join') | list }}"
+
+  - name: Create accounts
+    command:
+      cmd: "near --keyPath ~/.near/node-1/validator_key.json create-account {{ item }} --masterAccount node-1 --initialBalance 1000000"
+    environment:
+      NEAR_ENV: localnet
+    loop: "{{ account_names }}"
+  when: node == "node-1"
+
+
+- name: Synchronize accounts across nodes
+  block:
+    - name: Find files in .near-credentials on server node
+      find:
+        paths: "~/.near-credentials/local"
+      register: files_to_fetch
+      when: node == "node-1"
+      run_once: true
+
+    - name: Ensure .near-credentials/local directory exists on mgmt host
+      file:
+        path: "{{ near_tmp_dir }}/local"
+        state: directory
+      delegate_to: localhost
+
+    - name: Fetch .near-credentials files from the server node
+      fetch:
+        src: "{{ item.path }}"
+        dest: "{{ near_tmp_dir }}/local"
+        flat: true
+        validate_checksum: no
+      with_items: "{{ files_to_fetch.files }}"
+      when: node == "node-1"
+
+    - name: Ensure .near-credentials/local directory exists on client nodes
+      file:
+        path: "~/.near-credentials/local"
+        state: directory
+      when: node != "node-1"
+
+    - name: Find files in near_tmp on mgmt host
+      find:
+        paths: "{{ near_tmp_dir }}/local"
+      register: files_to_fetch_out
+      delegate_to: localhost
+      run_once: true
+
+    - name: Distribute .near-credentials to client nodes
+      copy:
+        src: "{{ near_tmp_dir }}/local/{{ item.path | basename }}"
+        dest: "~/.near-credentials/local/{{ item.path | basename }}"
+      with_items: "{{ files_to_fetch_out.files }}"
+      when: node != "node-1"

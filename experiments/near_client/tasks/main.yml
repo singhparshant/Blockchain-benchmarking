@@ -1,0 +1,183 @@
+- name: Create args.json file with required permissions
+  file:
+    dest: "/root/near-transactions/go-client/args.json"
+    state: touch
+    mode: '0777'
+  when: service.contracts | length > 0
+
+- block:
+    - name: Create args.json with required data
+      shell: echo '{"data":"This is a test data"}' > args.json
+      args:
+        chdir: ~/near-transactions/go-client
+
+    - name: Send transactions to YouTube contract
+      command: >
+        run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(30) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }} taskset {{ 2**service.use_core if service.use_core is defined else 255 }}
+        go run main.go
+        --account={{ hostvars["localhost"]["node_mapping"][node] }}_youtube.node-1
+        --method=upload
+        --contract_id=youtube.node-1
+        --network=local
+        --args=args.json
+        --workload=youtube
+      args:
+        chdir: ~/near-transactions/go-client
+      async: 2592000
+      poll: 0
+      register: youtube_task
+  when: "'youtube' in service.contracts"
+
+
+
+- block:
+  - name: Create args.json with required data
+    shell: echo '{"stock":"AAPL"}' > args.json
+    args:
+      chdir: ~/near-transactions/go-client
+  - name: Send transactions to Exchange contract
+    command: >
+      go run main.go
+      --account={{ hostvars["localhost"]["node_mapping"][node] }}_exchange.node-1
+      --method=buy
+      --contract_id=exchange.node-1
+      --network=local
+      --args=args.json
+      --workload=exchange
+    async: 2592000
+    poll: 0
+    register: exchange_task
+    args:
+      chdir: ~/near-transactions/go-client
+  when: "'exchange' in service.contracts"
+
+
+- name: Send transactions to fifa contract
+  command: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(30) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }} taskset {{ 2**service.use_core if service.use_core is defined else 255 }}
+     go run main.go
+     --account={{ hostvars["localhost"]["node_mapping"][node] }}_fifa.node-1
+     --method=increase
+     --contract_id=fifa.node-1
+     --network=local
+     --args=""
+     --workload=fifa
+     --workers={{ service.workers }}
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  register: fifa_task
+  poll: 0
+  args:
+    chdir: ~/near-transactions/go-client
+  when: "'fifa' in service.contracts"
+
+- name: Send transactions to uber contract
+  command: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(30) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }} taskset {{ 2**service.use_core if service.use_core is defined else 255 }}
+    go run main.go
+    --account={{ hostvars["localhost"]["node_mapping"][node] }}_uber.node-1
+    --method=findClosestDriver
+    --contract_id=uber.node-1
+    --network=local
+    --args=""
+    --workload=uber
+    --workers={{ service.workers }}
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  register: uber_task
+  args:
+    chdir: ~/near-transactions/go-client
+  when: "'uber' in service.contracts"
+
+
+- name: Send transactions to dota contract
+  command: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(30) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }} taskset {{ 2**service.use_core if service.use_core is defined else 255 }}
+    go run main.go
+    --account={{ hostvars["localhost"]["node_mapping"][node] }}_dota.node-1
+    --method=update
+    --contract_id=dota.node-1
+    --network=local
+    --args=""
+    --workload=dota
+    --workers={{ service.workers }}
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  register: dota_task
+  args:
+    chdir: ~/near-transactions/go-client
+  when: "'dota' in service.contracts"
+
+- name: Send transfers
+  command: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(30) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }} taskset {{ 2**service.use_core if service.use_core is defined else 255 }}
+    go run main.go
+    --account={{ hostvars["localhost"]["node_mapping"][node] }}_transfer.node-1
+    --method=""
+    --contract_id=transfer
+    --network=local
+    --args=''
+    --workload=transfer
+    --workers={{ service.workers }}
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  register: transfer_task
+  args:
+    chdir: ~/near-transactions/go-client
+  when: "'transfer' in service.contracts"
+
+# - name: Checking status of all asynchronous tasks
+#   block:
+#   - name: Wait for exchange task to complete
+#     async_status:
+#       jid: "{{ exchange_task.ansible_job_id }}"
+#     register: exchange_result
+#     until: exchange_result.finished
+#     retries: 100
+#     delay: 15
+#     when: "'exchange' in service.contracts"
+
+#   - name: Wait for fifa task to complete
+#     async_status:
+#       jid: "{{ fifa_task.ansible_job_id }}"
+#     register: fifa_result
+#     until: fifa_result.finished
+#     retries: 100
+#     delay: 15
+#     when: "'fifa' in service.contracts"
+
+#   - name: Wait for YouTube task to complete
+#     async_status:
+#       jid: "{{ youtube_task.ansible_job_id }}"
+#     register: youtube_result
+#     until: youtube_result.finished
+#     retries: 100
+#     delay: 15
+#     when: "'youtube' in service.contracts"
+
+#   - name: Wait for Uber task to complete
+#     async_status:
+#       jid: "{{ uber_task.ansible_job_id }}"
+#     register: uber_result
+#     until: uber_result.finished
+#     retries: 100
+#     delay: 15
+#     when: "'uber' in service.contracts"
+
+#   - name: Wait for dota task to complete
+#     async_status:
+#       jid: "{{ dota_task.ansible_job_id }}"
+#     register: dota_result
+#     until: dota_result.finished
+#     retries: 100
+#     delay: 15
+#     when: "'dota' in service.contracts"
+
+#   - name: Wait for transfer task to complete
+#     async_status:
+#       jid: "{{ transfer_task.ansible_job_id }}"
+#     register: transfer_result
+#     until: transfer_result.finished
+#     retries: 100
+#     delay: 15
+#     when: "'transfer' in service.contracts"
+#   when: service.contracts | length > 0

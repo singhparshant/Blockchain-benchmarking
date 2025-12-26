@@ -1,0 +1,68 @@
+- name: Print interfaces
+  debug:
+    msg: '{{ flow_ifaces }}'
+
+# We get the public key of node-1 from node_key.json file and use it as the boot node for the other nodes
+- name: fetch node_key.json from remote
+  fetch:
+    src: ~/.near/{{ node }}/node_key.json
+    dest: "{{ near_tmp_dir }}/node_key.json"
+    flat: true
+  when: node == "node-1"
+
+- name: set global fact for public_key
+  set_fact:
+    genesis_public_key: "{{ lookup('file', '{{ near_tmp_dir }}/node_key.json') | from_json | json_query('public_key') }}"
+  delegate_to: localhost
+  run_once: true
+  when: node == "node-1"
+
+# Get the genesis ip from the flow_ifaces list. This is again used to connect to the boot node which is always the node-1 in our case
+- name: client - Get genesis ip
+  set_fact:
+    genesis_ip: "{{ iface.ip_dst }}"
+  when:
+    - node != "node-1"
+    - (service.flow | int) == (iface.flow | int)
+  loop: "{{ flow_ifaces }}"
+  loop_control:
+    loop_var: iface
+
+- name: Print the Genesis IP
+  debug:
+    var: genesis_ip
+  when: node != "node-1"
+
+# Run the near network for the genesis node and other nodes
+- name: run near network for genesis node
+  shell: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(0) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }}
+    taskset {{ 2**service.use_core if service.use_core is defined else 255 }} {{ neard_bin_dir }}/neard --home ~/.near/{{ node }} run --network-addr 0.0.0.0:24567 --rpc-addr 0.0.0.0:3030 > output.txt 2>&1
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  when: (node == "node-1") and ((is_container is not defined) or (is_container is defined and not is_container))
+
+- name: run near network for other nodes
+  shell: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(0) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }}
+    taskset {{ 2**service.use_core if service.use_core is defined else 255 }} {{ neard_bin_dir }}/neard --home ~/.near/{{ node }} run --boot-nodes {{ genesis_public_key }}@{{ genesis_ip }}:24567 --network-addr 0.0.0.0:24567 --rpc-addr 0.0.0.0:3030 --archive > output.txt 2>&1
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  when: (node != "node-1") and ((is_container is not defined) or (is_container is defined and not is_container))
+
+# Run the near network for the genesis node and other nodes
+- name: run near network for genesis node
+  shell: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(0) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }}
+    {{ neard_bin_dir }}/neard --home ~/.near/{{ node }} run --network-addr 0.0.0.0:24567 --rpc-addr 0.0.0.0:3030 > output.txt 2>&1
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  when: (node == "node-1") and (is_container is defined and is_container)
+
+- name: run near network for other nodes
+  shell: >
+    run_service_action {{ 1 if service.signal | default(false) else 0 }} {{ service.wait | default(0) }} {{ 1 if service.sync_start is defined and service.sync_start else 0 }} {{ service.run_time | default(0) }} {{ 1 if service.sync_stop is defined and service.sync_stop else 0 }}
+    {{ neard_bin_dir }}/neard --home ~/.near/{{ node }} run --boot-nodes {{ genesis_public_key }}@{{ genesis_ip }}:24567 --network-addr 0.0.0.0:24567 --rpc-addr 0.0.0.0:3030 --archive > output.txt 2>&1
+  async: 2592000  # run in background - for 1 month or until finished/killed
+  poll: 0
+  when: (node != "node-1") and (is_container is defined and is_container)
