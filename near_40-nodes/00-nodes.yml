@@ -1,0 +1,175 @@
+---
+# 0. Nodes
+# Define and map nodes required for the scenario
+#
+# Scenario can be moved around in the infrastructure or
+# updated after a re-wiring of the network more easily.
+#
+# Set to "no" if you don't want to use the low-latency kernel
+use_low_latency_kernel: "yes"
+
+# Set the number of isolated cores. Cores starting with core 0 will be isolated. Set to 0, no cores will be isolated!
+num_isolated_cores: 0
+
+# set processing_node to localhost or delete the variable if processing should be done on management host
+# default: localhost
+processing_node: flare
+
+# determines if pcaps should be converted to csv on experiment nodes, then sent to a single host
+# default: false
+parse_pcap_on_nodes: false
+
+# this option creates tcpdump services for iperf server/clients and send_udp source/sinks.
+# for send_udp, you need to add a extra redundant send_udp service to the node at the end of the flow  with role: sink and flow and port defined
+# example: - { name: send_udp, role: sink, flow: 1, port: 1005 }
+# tcpdump file name should be "p{port}"
+# you can add a variable "tcpdump: off" to a iperf/sendudp service to disable auto tcpdump collection for that specific service
+# default: false
+auto_tcpdump_collection: false
+
+#does not start probe tcpdumps
+# TODO does not work on LXC containers yet
+probe_tcpdumps: false
+
+
+# Requires SR-IOV ifaces for the containers
+network_config: 'SRIOV'
+
+# ptp_clockmode: 'linuxptp'
+ptp_clockmode: 'switch_mode'
+
+# Debug flag true or false to pause during experiment execution
+debug_mode: true
+
+# ---------------------------------------------
+# 1. Option
+# Load the nodes for a pre-defined topology and its node mapping
+# Empty string to use own definition
+
+# A topology from the scenarios/topologies folder
+topology: ""
+# //
+# topology: "topo-01"
+
+
+# ---------------------------------------------
+# 2. Option
+# Define your own required hosts and their mapping
+# if the topology variable is defined it takes precedence
+
+# //
+# These nodes are from the Intel cluster of yieldly,
+# tinyman, idex, and meld that have the same HW specs
+nodes:
+
+  # - meld
+  # - tinyman
+  # - yieldly
+  # - bitcoincash
+  # - zone
+  # - goracle
+  - algofi
+  - goracle
+  - zone
+  - octorand
+  - flare
+
+# The mapping of the above nodes to node-X names
+# the node-X names are used in the rest of the scenario configuration
+# node_mapping: []
+# //
+containers:
+  algofi:
+    - { name: validator-1, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: validator-2, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: validator-3, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-24"] }
+    - { name: validator-4, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 25-32"] }
+    - { name: validator-5, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: validator-6, ifaces: [1.5], ssh_port: 10027, lxc_config: ["lxc.cgroup2.cpuset.cpus = 41-48"] }
+    - { name: validator-7, ifaces: [1.6], ssh_port: 10028, lxc_config: ["lxc.cgroup2.cpuset.cpus = 49-56"] }
+    - { name: validator-8, ifaces: [1.7], ssh_port: 10029, lxc_config: ["lxc.cgroup2.cpuset.cpus = 57-64"] }
+  goracle:
+    - { name: non-validator-1, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: non-validator-2, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: non-validator-3, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-24"] }
+    - { name: non-validator-4, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 25-32"] }
+    - { name: non-validator-5, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: non-validator-6, ifaces: [1.5], ssh_port: 10027, lxc_config: ["lxc.cgroup2.cpuset.cpus = 41-48"] }
+    - { name: non-validator-7, ifaces: [1.6], ssh_port: 10028, lxc_config: ["lxc.cgroup2.cpuset.cpus = 49-56"] }
+    - { name: non-validator-8, ifaces: [1.7], ssh_port: 10029, lxc_config: ["lxc.cgroup2.cpuset.cpus = 57-64"] }
+  zone:
+    # participation: 8 cores
+    - { name: non-validator-9, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: non-validator-10, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: non-validator-11, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-24"] }
+    - { name: non-validator-12, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 25-32"] }
+    - { name: non-validator-13, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: non-validator-14, ifaces: [1.5], ssh_port: 10027, lxc_config: ["lxc.cgroup2.cpuset.cpus = 41-48"] }
+    - { name: non-validator-15, ifaces: [1.6], ssh_port: 10028, lxc_config: ["lxc.cgroup2.cpuset.cpus = 49-56"] }
+    - { name: non-validator-16, ifaces: [1.7], ssh_port: 10029, lxc_config: ["lxc.cgroup2.cpuset.cpus = 57-64"] }
+  octorand:
+    - { name: validator-17, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: validator-18, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: validator-19, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-24"] }
+    - { name: validator-20, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 25-32"] }
+    - { name: validator-21, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: validator-22, ifaces: [1.5], ssh_port: 10027, lxc_config: ["lxc.cgroup2.cpuset.cpus = 41-48"] }
+    - { name: validator-23, ifaces: [1.6], ssh_port: 10028, lxc_config: ["lxc.cgroup2.cpuset.cpus = 49-56"] }
+    - { name: validator-24, ifaces: [1.7], ssh_port: 10029, lxc_config: ["lxc.cgroup2.cpuset.cpus = 57-64"] }
+  flare:
+    - { name: validator-25, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: validator-26, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: validator-27, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-24"] }
+    - { name: validator-28, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 25-32"] }
+    - { name: validator-29, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: validator-30, ifaces: [1.5], ssh_port: 10027, lxc_config: ["lxc.cgroup2.cpuset.cpus = 41-48"] }
+    - { name: validator-31, ifaces: [1.6], ssh_port: 10028, lxc_config: ["lxc.cgroup2.cpuset.cpus = 49-56"] }
+    - { name: validator-32, ifaces: [1.7], ssh_port: 10029, lxc_config: ["lxc.cgroup2.cpuset.cpus = 57-64"] }
+
+
+node_mapping:
+  node-1: validator-1
+  node-2: validator-2
+  node-3: validator-3
+  node-4: validator-4
+  node-5: validator-5
+  node-6: validator-6
+  node-7: validator-7
+  node-8: validator-8
+  node-9: non-validator-1
+  node-10: non-validator-2
+  node-11: non-validator-3
+  node-12: non-validator-4
+  node-13: non-validator-5
+  node-14: non-validator-6
+  node-15: non-validator-7
+  node-16: non-validator-8
+  node-17: non-validator-9
+  node-18: non-validator-10
+  node-19: non-validator-11
+  node-20: non-validator-12
+  node-21: non-validator-13
+  node-22: non-validator-14
+  node-23: non-validator-15
+  node-24: non-validator-16
+  node-25: non-validator-17
+  node-26: non-validator-18
+  node-27: non-validator-19
+  node-28: non-validator-20
+  node-29: non-validator-21
+  node-30: non-validator-22
+  node-31: non-validator-23
+  node-32: non-validator-24
+  node-33: non-validator-25
+  node-34: non-validator-26
+  node-35: non-validator-27
+  node-36: non-validator-28
+  node-37: non-validator-29
+  node-38: non-validator-30
+  node-39: non-validator-31
+  node-40: non-validator-32
+  node-41: algofi
+  node-42: goracle
+  node-43: zone
+  node-44: octorand
+  node-45: flare

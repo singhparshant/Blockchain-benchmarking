@@ -1,0 +1,238 @@
+---
+# 2. Application and protocol stack
+#
+# Services are usually a synonym for applications
+# Services can be started grouped by nodes. The same service can be run multiple
+# times, with the same or different parameters. The service parameters vary heavily.
+# All available services and their parameters can be seen in the roles/services folder.
+
+# Further information about services:
+# Services are started during an experiment, the experiment can run in a signal
+# or timer mode, both are explained in more detail in the 04-experiment.yml file
+# In both cases every service is sending a signal to the experiment run script when it stops:
+# 0 if the service finished successfully and 1 when an error occurred.
+#
+# In all cases if a failure signal (1) is received by the experiment runner the
+# experiment is aborted.
+# When running the experiment in signal mode, the experiment finishes only when all
+# registered services send a success signal to the runner. To register a service
+# the parameter "signal: yes" must be defined in the service entry. Usually all
+# service are started with the run_service wrapper script that takes care of the
+# signaling and sending registered signals to the experiment runner.
+
+# For more details on applications see roles/services/<application>/tasks/main.yml
+# There you will find more information on available settings.
+
+# Mention the number of validators and non_validators in the node-1 service.
+# The number of validators and non_validators should be equal to the number of nodes in the stack.
+# If the number of non_validators is not mentioned, the default value is 0.
+# The role of the node can be validator or non_validator.
+# near_setup service downloads the nearcore binary and downloads the npm, pnpm packages.
+# near_process service starts the nearcore node on both boot node and rest of the nodes.
+
+stacks:
+# Stacks with 15 nodes
+  stack-1:
+    name: '40 nodes, 8 validators, 4 shards'
+    services:
+      node-1:
+        - { name: near_setup, level: 0, role: validator, validators: 8, non_validators: 32, shards: 4 }
+        - { name: near_process, level: 2, role: validator  }
+        - { name: near_contracts, level: 4 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: validator }
+      node-2:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 1, role: validator  }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: validator }
+      node-3:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 2, role: validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: validator }
+      node-4:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 3, role: validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: validator }
+      node-5:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 4, role: validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: validator }
+      node-6:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 5, role: validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-7:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 6, role: validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-8:
+        - { name: near_setup, level: 1, role: validator  }
+        - { name: near_process, level: 3, flow: 7, role: validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-9:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 8, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-10:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 9, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-11:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 10, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-12:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 11, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-13:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 12, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-14:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 13, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-15:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 14, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-16:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 15, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-17:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 16, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-18:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 17, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-19:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 18, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-20:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 19, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-21:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 20, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-22:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 21, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-23:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 22, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-24:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 23, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-25:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 24, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-26:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 25, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-27:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 26, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-28:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 27, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-29:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 28, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-30:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 29, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-31:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 30, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-32:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 31, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-33:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 32, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-34:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 33, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-35:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 34, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-36:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 35, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-37:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 36, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-38:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 37, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-39:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 38, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+      node-40:
+        - { name: near_setup, level: 1, role: non_validator  }
+        - { name: near_process, level: 3, flow: 39, role: non_validator }
+        - { name: near_contracts, level: 5 }
+        # - { name: near_client, level: 6, sync_start: yes, id: 15N_5V_1S, contracts: [], role: non_validator }
+    protocols: {}

@@ -1,0 +1,145 @@
+---
+# 0. Nodes
+# Define and map nodes required for the scenario
+#
+# Scenario can be moved around in the infrastructure or
+# updated after a re-wiring of the network more easily.
+#
+# Set to "no" if you don't want to use the low-latency kernel
+use_low_latency_kernel: "yes"
+
+# Set the number of isolated cores. Cores starting with core 0 will be isolated. Set to 0, no cores will be isolated!
+num_isolated_cores: 0
+
+# set processing_node to localhost or delete the variable if processing should be done on management host
+# default: localhost
+processing_node: flare
+
+# determines if pcaps should be converted to csv on experiment nodes, then sent to a single host
+# default: false
+parse_pcap_on_nodes: false
+
+# this option creates tcpdump services for iperf server/clients and send_udp source/sinks.
+# for send_udp, you need to add a extra redundant send_udp service to the node at the end of the flow  with role: sink and flow and port defined
+# example: - { name: send_udp, role: sink, flow: 1, port: 1005 }
+# tcpdump file name should be "p{port}"
+# you can add a variable "tcpdump: off" to a iperf/sendudp service to disable auto tcpdump collection for that specific service
+# default: false
+auto_tcpdump_collection: false
+
+#does not start probe tcpdumps
+# TODO does not work on LXC containers yet
+probe_tcpdumps: false
+
+
+# Requires SR-IOV ifaces for the containers
+network_config: 'SRIOV'
+
+# ptp_clockmode: 'linuxptp'
+ptp_clockmode: 'switch_mode'
+
+# Debug flag true or false to pause during experiment execution
+debug_mode: true
+
+# ---------------------------------------------
+# 1. Option
+# Load the nodes for a pre-defined topology and its node mapping
+# Empty string to use own definition
+
+# A topology from the scenarios/topologies folder
+topology: ""
+# //
+# topology: "topo-01"
+
+
+# ---------------------------------------------
+# 2. Option
+# Define your own required hosts and their mapping
+# if the topology variable is defined it takes precedence
+
+# //
+# These nodes are from the Intel cluster of yieldly,
+# tinyman, idex, and meld that have the same HW specs
+nodes:
+
+  # - meld
+  # - tinyman
+  # - yieldly
+  # - bitcoincash
+  # - zone
+  # - goracle
+  - algofi
+  - goracle
+  - zone
+
+# The mapping of the above nodes to node-X names
+# the node-X names are used in the rest of the scenario configuration
+# node_mapping: []
+# //
+containers:
+  algofi:
+    - { name: validator-1, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: non-validator-1, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: non-validator-2, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-32"] }
+    - { name: non-validator-3, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: non-validator-4, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 45-52"] }
+    # - { name: client3-1, ifaces: [1.4], ssh_port: 10026 }
+    # - { name: client3-2, ifaces: [1.6], ssh_port: 10028 }
+  goracle:
+    - { name: non-validator-5, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: non-validator-6, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: non-validator-7, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-32"] }
+    - { name: non-validator-8, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: non-validator-9, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 45-52"] }
+    # - { name: client4-1, ifaces: [1.4], ssh_port: 10026 }
+    # - { name: client4-2, ifaces: [1.6], ssh_port: 10028 }
+  zone:
+    # participation: 8 cores
+    - { name: non-validator-10, ifaces: [1.0], ssh_port: 10022, lxc_config: ["lxc.cgroup2.cpuset.cpus = 1-8"]  }
+    - { name: non-validator-11, ifaces: [1.1], ssh_port: 10023, lxc_config: ["lxc.cgroup2.cpuset.cpus = 9-16"] }
+    - { name: non-validator-12, ifaces: [1.2], ssh_port: 10024, lxc_config: ["lxc.cgroup2.cpuset.cpus = 17-32"] }
+    - { name: non-validator-13, ifaces: [1.3], ssh_port: 10025, lxc_config: ["lxc.cgroup2.cpuset.cpus = 33-40"] }
+    - { name: non-validator-14, ifaces: [1.4], ssh_port: 10026, lxc_config: ["lxc.cgroup2.cpuset.cpus = 45-52"] }
+    # # client: 4 cores
+    # - { name: client1-1, ifaces: [1.4], ssh_port: 10026 }
+    # - { name: client1-2, ifaces: [1.6], ssh_port: 10028}
+
+# node_mapping:
+#   node-1: validator-1
+#   node-2: validator-2
+#   node-3: validator-3
+#   node-4: validator-4
+#   node-5: validator-5
+#   node-6: validator-6
+#   node-7: validator-7
+#   node-8: validator-8
+#   node-9: non-validator-1
+#   node-10: non-validator-2
+#   node-11: non-validator-3
+#   node-12: non-validator-4
+#   node-13: non-validator-5
+#   node-14: non-validator-6
+#   node-15: non-validator-7
+#   node-16: algofi
+#   node-17: goracle
+#   node-18: zone
+
+node_mapping:
+  node-1: validator-1
+  node-2: non-validator-1
+  node-3: non-validator-2
+  node-4: non-validator-3
+  node-5: non-validator-4
+  node-6: non-validator-5
+  node-7: non-validator-6
+  node-8: non-validator-7
+  node-9: non-validator-8
+  node-10: non-validator-9
+  node-11: non-validator-10
+  node-12: non-validator-11
+  node-13: non-validator-12
+  node-14: non-validator-13
+  node-15: non-validator-14
+  node-16: algofi
+  node-17: goracle
+  node-18: zone
